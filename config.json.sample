@@ -1,0 +1,21 @@
+{
+  "general": {
+    "limit": 1
+  },
+  "aws": {
+    "accessKeyId": "",
+    "secretAccessKey": "",
+    "region": "ap-northeast-1",
+
+    "cognito": {
+      "UserPoolId": "ap-northeast-1_xxxxxxxxxx",
+      "DesiredDeliveryMediums": [
+        "EMAIL"
+      ],
+      "UserAttributes": [
+        "email",
+        "preferred_username"
+      ]
+    }
+  }
+}
