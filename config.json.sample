@@ -9,6 +9,7 @@
 
     "cognito": {
       "UserPoolId": "ap-northeast-1_xxxxxxxxxx",
+      "ClientId": "",
       "DesiredDeliveryMediums": [
         "EMAIL"
       ],

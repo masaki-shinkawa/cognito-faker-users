@@ -4,6 +4,7 @@ import { DeliveryMediumListType } from 'aws-sdk/clients/cognitoidentityservicepr
 
 export interface ConfigCognitoProps {
   UserPoolId: string;
+  ClientId: string;
   DesiredDeliveryMediums: DeliveryMediumListType;
   UserAttributes: string[];
 }
@@ -62,6 +63,10 @@ export class Config {
     return this.config.aws.cognito.UserPoolId;
   }
 
+  public get ClientId(): string {
+    return this.config.aws.cognito.ClientId;
+  }
+
   private validate(config: ConfigProps): boolean {
     // required Props
     if (
@@ -73,10 +78,12 @@ export class Config {
         config.aws.secretAccessKey &&
         config.aws.region &&
         config.aws.cognito.UserPoolId &&
+        config.aws.cognito.ClientId &&
         validator.isAscii(config.aws.accessKeyId) &&
         validator.isAscii(config.aws.secretAccessKey) &&
         validator.isAscii(config.aws.region) &&
-        validator.isAscii(config.aws.cognito.UserPoolId)
+        validator.isAscii(config.aws.cognito.UserPoolId) &&
+        validator.isAscii(config.aws.cognito.ClientId)
       )
     ) {
       console.error('Insufficient configuration file settings.');

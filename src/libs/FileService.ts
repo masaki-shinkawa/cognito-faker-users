@@ -5,7 +5,7 @@ export const writeLog = (text: string) => {
   const callback: NoParamCallback = error => {
     if (error) console.log(error);
   };
-  fs.writeFile(resultFilePath, text, callback);
+  fs.appendFile(resultFilePath, text, callback);
 };
 
 export const loadConfig = () => {

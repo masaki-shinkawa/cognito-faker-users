@@ -6,11 +6,11 @@ if (!Config.instance.isValid) {
   process.exit(0);
 }
 (async () => {
-  CognitoService.instance.fakerAdminCreateUser();
-  // CognitoService.instance.adminConfirmSignUp("HartmannVinnie")
-  
+  const options = await CognitoService.instance.fakerAdminCreateUser();
+  await CognitoService.instance.adminConfirmSignUp(options.Username);
+
   console.info('Complete!! check your aws console.');
   console.info(
     `https://${Config.instance.region}.console.aws.amazon.com/cognito/users/?region=${Config.instance.region}#/pool/${Config.instance.UserPoolId}/users`
   );
-})()
+})();
