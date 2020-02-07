@@ -3,20 +3,27 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const aws_sdk_1 = __importDefault(require("aws-sdk"));
+require("cross-fetch/polyfill");
+const cognitoidentityserviceprovider_1 = __importDefault(require("aws-sdk/clients/cognitoidentityserviceprovider"));
+const amazon_cognito_identity_js_1 = require("amazon-cognito-identity-js");
 const faker_1 = __importDefault(require("faker"));
 const FileService_1 = require("./FileService");
 const Config_1 = require("./Config");
+const const_1 = require("../const");
 class CognitoService {
     constructor() {
-        const { AWS_DEFAULT_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_USER_POOL_ID } = process.env;
+        const { accessKeyId, secretAccessKey, region } = Config_1.Config.instance.aws;
         const options = {
-            accessKeyId: AWS_ACCESS_KEY_ID,
-            secretAccessKey: AWS_SECRET_ACCESS_KEY,
-            region: AWS_DEFAULT_REGION
+            accessKeyId,
+            secretAccessKey,
+            region
         };
-        this.cognitoIdentityServiceProvider = new aws_sdk_1.default.CognitoIdentityServiceProvider(options);
-        this.userPoolId = AWS_USER_POOL_ID || '';
+        this.cognitoIdentityServiceProvider = new cognitoidentityserviceprovider_1.default(options);
+        // CognitoUserPoolの初期化
+        this.cognitoUserPool = new amazon_cognito_identity_js_1.CognitoUserPool({
+            UserPoolId: Config_1.Config.instance.UserPoolId,
+            ClientId: Config_1.Config.instance.ClientId
+        });
     }
     /** インスタンスの取得 */
     static get instance() {
@@ -27,7 +34,7 @@ class CognitoService {
     }
     async listUsers(options = {}) {
         const params = {
-            UserPoolId: this.userPoolId,
+            UserPoolId: Config_1.Config.instance.UserPoolId,
             ...options
         };
         const listUsers = this.cognitoIdentityServiceProvider.listUsers(params);
@@ -35,13 +42,13 @@ class CognitoService {
     }
     async adminCreateUser(options = {}) {
         var params = {
-            UserPoolId: this.userPoolId /* required */,
+            UserPoolId: Config_1.Config.instance.UserPoolId /* required */,
             Username: 'STRING_VALUE' /* required */,
             ClientMetadata: {},
             DesiredDeliveryMediums: ['SMS', 'EMAIL'],
             ForceAliasCreation: true || false,
             MessageAction: 'SUPPRESS',
-            TemporaryPassword: 'Passw0rd!',
+            TemporaryPassword: const_1.temporaryPassword,
             UserAttributes: [],
             ValidationData: [],
             ...options
@@ -53,23 +60,47 @@ class CognitoService {
     }
     async fakerAdminCreateUser() {
         const options = this.createAdminCreateUserRequest(Config_1.Config.instance.cognito);
-        this.adminCreateUser(options);
-        console.log(options);
+        await this.adminCreateUser(options);
+        return options;
     }
     async adminConfirmSignUp(userName) {
-        const options = {
-            UserPoolId: Config_1.Config.instance.UserPoolId,
-            Username: userName
+        const userData = {
+            Username: userName,
+            Pool: this.cognitoUserPool
         };
-        const response = await this.cognitoIdentityServiceProvider
-            .adminConfirmSignUp(options)
-            .promise();
-        console.log(response);
+        const cognitoUser = new amazon_cognito_identity_js_1.CognitoUser(userData);
+        const authenticationData = {
+            Username: userName,
+            Password: const_1.temporaryPassword
+        };
+        const authenticationDetails = new amazon_cognito_identity_js_1.AuthenticationDetails(authenticationData);
+        // Callbackを取得
+        const completeNewPasswordChallenge = this.completeNewPasswordChallenge;
+        cognitoUser.authenticateUser(authenticationDetails, {
+            onSuccess: () => { },
+            onFailure: () => { },
+            newPasswordRequired: userAttributes => {
+                delete userAttributes.email_verified;
+                completeNewPasswordChallenge(cognitoUser, const_1.temporaryPassword, userAttributes);
+            }
+        });
+    }
+    completeNewPasswordChallenge(cognitoUser, temporaryPassword, sessionUserAttributes) {
+        cognitoUser.completeNewPasswordChallenge(temporaryPassword, sessionUserAttributes, {
+            onSuccess: () => { },
+            onFailure: (err) => console.log(err)
+        });
     }
     createAdminCreateUserRequest(config) {
         const UserAttributes = this.createAttributeList(config.UserAttributes);
         const Username = faker_1.default.fake('{{name.lastName}}{{name.firstName}}');
-        return { ...config, Username, UserAttributes };
+        const requestConfig = {
+            ...config,
+            Username,
+            UserAttributes
+        };
+        delete requestConfig.ClientId;
+        return requestConfig;
     }
     createAttributeList(attributes = []) {
         const attributeFakerFunctions = this.attributeFakerFactory();

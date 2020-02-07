@@ -10,7 +10,7 @@ exports.writeLog = (text) => {
         if (error)
             console.log(error);
     };
-    fs_1.default.writeFile(const_1.resultFilePath, text, callback);
+    fs_1.default.appendFile(const_1.resultFilePath, text, callback);
 };
 exports.loadConfig = () => {
     const line = fs_1.default.readFileSync(const_1.configFilePath, { encoding: 'utf-8' });

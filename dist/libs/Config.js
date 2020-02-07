@@ -35,6 +35,9 @@ class Config {
     get UserPoolId() {
         return this.config.aws.cognito.UserPoolId;
     }
+    get ClientId() {
+        return this.config.aws.cognito.ClientId;
+    }
     validate(config) {
         // required Props
         if (!(config &&
@@ -44,10 +47,12 @@ class Config {
             config.aws.secretAccessKey &&
             config.aws.region &&
             config.aws.cognito.UserPoolId &&
+            config.aws.cognito.ClientId &&
             validator_1.default.isAscii(config.aws.accessKeyId) &&
             validator_1.default.isAscii(config.aws.secretAccessKey) &&
             validator_1.default.isAscii(config.aws.region) &&
-            validator_1.default.isAscii(config.aws.cognito.UserPoolId))) {
+            validator_1.default.isAscii(config.aws.cognito.UserPoolId) &&
+            validator_1.default.isAscii(config.aws.cognito.ClientId))) {
             console.error('Insufficient configuration file settings.');
             return false;
         }

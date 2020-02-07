@@ -75,3 +75,5 @@ typings/
 .serverless
 
 config.json
+
+dist
