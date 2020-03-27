@@ -12,4 +12,4 @@ services:
       - AWS_CLIENT_APP_ID=${AWS_CLIENT_APP_ID} 
     volumes:
       - ./:/project
-    tty: true
+    command: ["npm", "run", dev]

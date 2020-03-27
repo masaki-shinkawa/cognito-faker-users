@@ -1,6 +1,6 @@
-import { loadConfig } from './FileService';
+import { loadConfig, loadOverride } from './FileService';
 import validator from 'validator';
-import { DeliveryMediumListType } from 'aws-sdk/clients/cognitoidentityserviceprovider';
+import { DeliveryMediumListType, AdminCreateUserRequest } from 'aws-sdk/clients/cognitoidentityserviceprovider';
 
 export interface ConfigCognitoProps {
   UserPoolId: string;
@@ -23,10 +23,12 @@ export interface ConfigProps {
 export class Config {
   private static _instance: Config;
   private config: ConfigProps;
+  private override: AdminCreateUserRequest;
   public isValid: boolean;
 
   private constructor() {
     this.config = loadConfig();
+    this.override = loadOverride();
     this.isValid = this.validate(this.config);
   }
 
@@ -65,6 +67,10 @@ export class Config {
 
   public get ClientId(): string {
     return this.config.aws.cognito.ClientId;
+  }
+
+  public get overrideConfig(): AdminCreateUserRequest {
+    return this.override;
   }
 
   private validate(config: ConfigProps): boolean {

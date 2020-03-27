@@ -75,5 +75,6 @@ typings/
 .serverless
 
 config.json
+override.json
 
 dist

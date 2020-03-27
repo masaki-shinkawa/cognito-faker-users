@@ -8,13 +8,15 @@ import CognitoIdentityServiceProvider, {
 import {
   CognitoUserPool,
   CognitoUser,
-  AuthenticationDetails,
+  AuthenticationDetails
 } from 'amazon-cognito-identity-js';
 import faker from 'faker';
 import { writeLog } from './FileService';
 import { Config, ConfigCognitoProps } from './Config';
 import { temporaryPassword } from '../const';
 import { CognitoIdentity } from 'aws-sdk/clients/all';
+import deepmerge from 'deepmerge';
+
 
 interface AttributeFakerFunctions {
   [keys: string]: () => AttributeType;
@@ -84,7 +86,10 @@ export class CognitoService {
   }
 
   public async fakerAdminCreateUser() {
-    const options = this.createAdminCreateUserRequest(Config.instance.cognito);
+    const options = this.createAdminCreateUserRequest(
+      Config.instance.cognito,
+      Config.instance.overrideConfig
+    );
     await this.adminCreateUser(options);
     return options;
   }
@@ -136,18 +141,22 @@ export class CognitoService {
   }
 
   private createAdminCreateUserRequest(
-    config: ConfigCognitoProps
+    config: ConfigCognitoProps,
+    override: AdminCreateUserRequest
   ): AdminCreateUserRequest {
     const UserAttributes: AttributeListType = this.createAttributeList(
       config.UserAttributes
     );
     const Username: string = faker.fake('{{name.lastName}}{{name.firstName}}');
 
-    const requestConfig = {
+    const baseConfig = {
       ...config,
       Username,
-      UserAttributes
+      UserAttributes,
     };
+    console.log(baseConfig);
+    const requestConfig = deepmerge(baseConfig, override)
+    console.log(requestConfig);
     delete requestConfig.ClientId;
     return requestConfig as AdminCreateUserRequest;
   }

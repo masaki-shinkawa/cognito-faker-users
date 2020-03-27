@@ -17,6 +17,7 @@
     "amazon-cognito-identity-js": "^3.2.2",
     "aws-sdk": "^2.611.0",
     "cross-fetch": "^3.0.4",
+    "deepmerge": "^4.2.2",
     "faker": "^4.1.0",
     "validator": "^12.2.0"
   },

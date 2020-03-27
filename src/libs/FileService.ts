@@ -1,5 +1,5 @@
 import fs, { NoParamCallback } from 'fs';
-import { resultFilePath, configFilePath } from '../const';
+import { resultFilePath, configFilePath, overrideFilePath } from '../const';
 
 export const writeLog = (text: string) => {
   const callback: NoParamCallback = error => {
@@ -8,14 +8,17 @@ export const writeLog = (text: string) => {
   fs.appendFile(resultFilePath, text, callback);
 };
 
-export const loadConfig = () => {
-  const line = fs.readFileSync(configFilePath, { encoding: 'utf-8' });
+export const loadConfig = () => load(configFilePath)
+export const loadOverride = () => load(overrideFilePath)
+
+export const load = (path: string) => {
+  const line = fs.readFileSync(path, { encoding: 'utf-8' });
   try {
     return JSON.parse(line);
   } catch (error) {
     console.error(
-      `Failed to read configuration file. [Path: ${configFilePath}]`
+      `Failed to read configuration file. [Path: ${path}]`
     );
-    return null;
+    return {};
   }
 };
