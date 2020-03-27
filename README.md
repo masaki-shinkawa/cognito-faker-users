@@ -3,7 +3,9 @@
 ## 実行方法
 
 ```
-docker run --rm -it \
+$ docker build -t cognito-create-users .
+
+$ docker run --rm -it \
 -v ${PWD}/config.json:/project/config.json \
 -v ${PWD}/override.json:/project/override.json \
 cognito-create-users
