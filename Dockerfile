@@ -1,9 +1,8 @@
 FROM node:13.7.0-alpine3.11
 
-VOLUME /root/.aws
-VOLUME /project
 WORKDIR /project
-COPY ./package.json ./
-COPY ./package-lock.json ./
+COPY . /project
 
-RUN npm i --production
+RUN npm i && npm run build
+
+CMD [ "npm", "run", "start" ]
