@@ -17,7 +17,6 @@ import { temporaryPassword } from '../const';
 import { CognitoIdentity } from 'aws-sdk/clients/all';
 import deepmerge from 'deepmerge';
 
-
 interface AttributeFakerFunctions {
   [keys: string]: () => AttributeType;
 }
@@ -73,7 +72,7 @@ export class CognitoService {
       DesiredDeliveryMediums: ['SMS', 'EMAIL'],
       ForceAliasCreation: true || false,
       MessageAction: 'SUPPRESS',
-      TemporaryPassword: temporaryPassword,
+      TemporaryPassword: Config.instance.overrideConfig.TemporaryPassword || temporaryPassword,
       UserAttributes: [],
       ValidationData: [],
       ...options
@@ -103,7 +102,7 @@ export class CognitoService {
 
     const authenticationData = {
       Username: userName,
-      Password: temporaryPassword
+      Password: Config.instance.overrideConfig.TemporaryPassword || temporaryPassword
     };
 
     const authenticationDetails = new AuthenticationDetails(authenticationData);
@@ -118,9 +117,34 @@ export class CognitoService {
         delete userAttributes.email_verified;
         completeNewPasswordChallenge(
           cognitoUser,
-          temporaryPassword,
+          Config.instance.overrideConfig.TemporaryPassword || temporaryPassword,
           userAttributes
         );
+      }
+    });
+  }
+
+  public async signin() {
+    const authenticationDetails = new AuthenticationDetails({
+      Username: Config.instance.overrideConfig.Username,
+      Password: Config.instance.overrideConfig.TemporaryPassword || temporaryPassword
+    });
+    const userPool = new CognitoUserPool({
+      UserPoolId: Config.instance.UserPoolId,
+      ClientId: Config.instance.ClientId
+    });
+    const cognitoUser = new CognitoUser({
+      Username: Config.instance.overrideConfig.Username,
+      Pool: userPool
+    });
+    cognitoUser.authenticateUser(authenticationDetails, {
+      onSuccess: result => {
+        console.log('result: ' + JSON.stringify(result, null, 2));
+        const accessToken = result.getAccessToken().getJwtToken();
+        console.log('AccessToken: ' + accessToken);
+      },
+      onFailure: err => {
+        console.error(err);
       }
     });
   }
@@ -152,10 +176,10 @@ export class CognitoService {
     const baseConfig = {
       ...config,
       Username,
-      UserAttributes,
+      UserAttributes
     };
     console.log(baseConfig);
-    const requestConfig = deepmerge(baseConfig, override)
+    const requestConfig = deepmerge(baseConfig, override);
     console.log(requestConfig);
     delete requestConfig.ClientId;
     return requestConfig as AdminCreateUserRequest;

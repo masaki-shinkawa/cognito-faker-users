@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node dist/main.js",
     "dev": "ts-node src/main.ts",
+    "signin": "ts-node src/signin.ts",
     "build": "tsc",
     "lint": "eslint src/**/*.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
