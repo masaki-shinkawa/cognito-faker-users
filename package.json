@@ -20,7 +20,7 @@
     "cross-fetch": "^3.0.4",
     "deepmerge": "^4.2.2",
     "faker": "^4.1.0",
-    "validator": "^12.2.0"
+    "validator": "^13.7.0"
   },
   "devDependencies": {
     "@types/faker": "^4.1.9",
